@@ -1,0 +1,168 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Hostel {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  rating    Float?
+  address   String
+  city      String
+  country   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  buildings     Building[]
+  subscriptions Subscription[]
+  users         User[]
+  complaints    Complaint[]
+}
+
+model Building {
+  id        String   @id @default(uuid())
+  hostelId  String
+  name      String
+  address   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostel Hostel  @relation(fields: [hostelId], references: [id])
+  floors Floor[]
+}
+
+model Floor {
+  id         String   @id @default(uuid())
+  buildingId String
+  number     Int
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  building Building @relation(fields: [buildingId], references: [id])
+  rooms    Room[]
+}
+
+model Room {
+  id        String   @id @default(uuid())
+  floorId   String
+  number    String
+  type      String // e.g. "single", "double"
+  price     Decimal
+  capacity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  floor Floor @relation(fields: [floorId], references: [id])
+  beds  Bed[]
+}
+
+model Bed {
+  id         String   @id @default(uuid())
+  roomId     String
+  label      String // e.g. "Bed A"
+  isOccupied Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  room     Room      @relation(fields: [roomId], references: [id])
+  bookings Booking[]
+}
+
+model User {
+  id             String   @id @default(uuid())
+  name           String
+  email          String   @unique
+  hashedPassword String
+  role           Role     @default(STUDENT)
+  hostelId       String? // if role=WARDEN or OWNER, which hostel
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  hostel     Hostel?     @relation(fields: [hostelId], references: [id])
+  bookings   Booking[]
+  complaints Complaint[]
+}
+
+model Booking {
+  id        String   @id @default(uuid())
+  studentId String
+  bedId     String
+  startDate DateTime
+  endDate   DateTime
+  status    String // e.g. "PENDING", "CONFIRMED", "CANCELLED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  student User     @relation(fields: [studentId], references: [id])
+  bed     Bed      @relation(fields: [bedId], references: [id])
+  payment Payment?
+  invoice Invoice?
+}
+
+model Payment {
+  id          String   @id @default(uuid())
+  bookingId   String   @unique
+  amount      Decimal
+  method      String // e.g. "Stripe", "JazzCash"
+  status      String // e.g. "SUCCEEDED","FAILED"
+  transaction String? // gateway transaction ID
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Invoice {
+  id        String    @id @default(uuid())
+  bookingId String    @unique
+  issueDate DateTime  @default(now())
+  dueDate   DateTime?
+  total     Decimal
+  status    String // e.g. "PAID","DUE"
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+}
+
+model Complaint {
+  id        String   @id @default(uuid())
+  hostelId  String
+  studentId String
+  category  String
+  message   String
+  status    String // e.g. "OPEN","RESOLVED"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostel  Hostel @relation(fields: [hostelId], references: [id])
+  student User   @relation(fields: [studentId], references: [id])
+}
+
+model Subscription {
+  id        String   @id @default(uuid())
+  hostelId  String
+  plan      String // e.g. "basic","premium"
+  startDate DateTime
+  endDate   DateTime
+  status    String // e.g. "ACTIVE","PAST_DUE"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  hostel Hostel @relation(fields: [hostelId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  OWNER
+  WARDEN
+  STUDENT
+}
