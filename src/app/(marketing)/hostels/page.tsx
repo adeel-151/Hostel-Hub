@@ -64,7 +64,7 @@ export default async function HostelsPage() {
                 <CardContent className="flex-1">
                   <div className="flex items-center gap-2 mb-2">
                     {hostel.rating && (
-                      <span className="font-medium text-yellow-600 dark:text-yellow-500">★ {hostel.rating}</span>
+                      <span className="font-medium text-yellow-600 dark:text-yellow-500">★ {hostel.rating.toString()}</span>
                     )}
                   </div>
                 </CardContent>
