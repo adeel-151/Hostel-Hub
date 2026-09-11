@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -97,7 +97,10 @@ export default async function HostelDetailsPage({ params }: { params: Promise<{ 
                       </span>
 
                       <Dialog>
-                        <DialogTrigger render={<Button disabled={room.availableBeds === 0} />}>
+                        <DialogTrigger 
+                          disabled={room.availableBeds === 0}
+                          className={buttonVariants({ variant: "default" })}
+                        >
                           {room.availableBeds === 0 ? "Full" : "Book Now"}
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
