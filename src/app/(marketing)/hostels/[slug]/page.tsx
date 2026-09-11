@@ -95,10 +95,8 @@ export default async function HostelDetailsPage({ params }: { params: Promise<{ 
                       </span>
 
                       <Dialog>
-                        <DialogTrigger asChild>
-                          <Button disabled={room.availableBeds === 0}>
-                            {room.availableBeds === 0 ? "Full" : "Book Now"}
-                          </Button>
+                        <DialogTrigger render={<Button disabled={room.availableBeds === 0} />}>
+                          {room.availableBeds === 0 ? "Full" : "Book Now"}
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[425px]">
                           <DialogHeader>
