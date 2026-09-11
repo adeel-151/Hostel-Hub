@@ -1,8 +1,22 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { prisma } from "@/lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  const featuredHostels = await prisma.hostel.findMany({
+    take: 3,
+    orderBy: { rating: "desc" },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      city: true,
+      country: true,
+      rating: true,
+    },
+  });
+
   return (
     <div className="flex flex-col items-center">
       {/* Hero Section */}
@@ -20,9 +34,11 @@ export default function Home() {
             <div className="flex-1">
               <Input placeholder="Where are you going?" className="h-12 text-lg border-none shadow-none focus-visible:ring-0" />
             </div>
-            <Button size="lg" className="h-12 px-8">
-              Search Hostels
-            </Button>
+            <Link href="/hostels">
+              <Button size="lg" className="h-12 px-8 w-full md:w-auto">
+                Search Hostels
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -37,22 +53,22 @@ export default function Home() {
             </p>
           </div>
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 py-12 md:grid-cols-3">
-            {/* Placeholder cards */}
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex flex-col group overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
+            {featuredHostels.map((hostel) => (
+              <div key={hostel.id} className="flex flex-col group overflow-hidden rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md">
                 <div className="aspect-video bg-muted relative">
-                  {/* Image placeholder */}
                   <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                    <span className="text-sm">Image {i}</span>
+                    <span className="text-sm">{hostel.name}</span>
                   </div>
                 </div>
                 <div className="flex flex-col space-y-1.5 p-6">
-                  <h3 className="font-semibold leading-none tracking-tight">Hostel {i}</h3>
-                  <p className="text-sm text-muted-foreground">City, Country</p>
+                  <h3 className="font-semibold leading-none tracking-tight">{hostel.name}</h3>
+                  <p className="text-sm text-muted-foreground">{hostel.city}, {hostel.country}</p>
                 </div>
                 <div className="p-6 pt-0 mt-auto flex items-center justify-between">
-                  <span className="font-bold text-lg">$2{i}.99 / night</span>
-                  <Link href={`/hostels/hostel-${i}`}>
+                  {hostel.rating && (
+                    <span className="font-medium text-yellow-600 dark:text-yellow-500">★ {hostel.rating.toString()}</span>
+                  )}
+                  <Link href={`/hostels/${hostel.slug}`}>
                     <Button variant="outline" size="sm">View</Button>
                   </Link>
                 </div>
